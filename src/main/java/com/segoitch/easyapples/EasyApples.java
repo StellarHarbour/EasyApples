@@ -58,7 +58,6 @@ public class EasyApples extends JavaPlugin implements Listener {
         player.playSound(event.getClickedBlock().getLocation(), Sound.BLOCK_AZALEA_LEAVES_HIT, 0.10F, 1.0F);
 
         int currentPlayerValue = this.playerTries.get(player);
-        player.sendMessage("Current tries: " + currentPlayerValue);
         this.playerTries.replace(player, ++currentPlayerValue); // have to be pre-increment to make it work
         player.sendMessage();
 
