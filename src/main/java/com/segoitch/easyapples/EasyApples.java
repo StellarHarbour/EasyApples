@@ -64,6 +64,7 @@ public class EasyApples extends JavaPlugin implements Listener {
 
             if (Math.random() <= this.appleProcChance) {
                 player.getInventory().addItem(this.apple);
+
             }
             // event.getClickedBlock().breakNaturally(); // if you want to drop block
             return;
