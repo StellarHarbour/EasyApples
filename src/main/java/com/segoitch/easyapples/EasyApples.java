@@ -1,6 +1,10 @@
 package com.segoitch.easyapples;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -16,7 +20,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class EasyApples extends JavaPlugin implements Listener {
 
-    private Random random;
     private ItemStack apple;
     private ItemStack stick;
     private double appleProcChance;
@@ -27,7 +30,7 @@ public class EasyApples extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        this.random = new Random();
+        Random random = new Random();
         this.apple = new ItemStack(Material.APPLE, 1);
         this.stick = new ItemStack(Material.STICK, random.nextInt(1, 2));
         this.appleProcChance = 0.05;
@@ -40,37 +43,39 @@ public class EasyApples extends JavaPlugin implements Listener {
                 Material.FLOWERING_AZALEA_LEAVES, Material.SPRUCE_LEAVES);
 
         Bukkit.getPluginManager().registerEvents(this, this);
-        super.onEnable();
     }
 
     @EventHandler
     public void onLeavesRightClick(PlayerInteractEvent event) {
         final Player player = event.getPlayer();
         // Check to fire event only one time (because basically it fires once for each hand)
-        if (!Objects.equals(event.getHand(), EquipmentSlot.HAND) || event.getAction() == Action.LEFT_CLICK_BLOCK
+        if (event.getHand() != EquipmentSlot.HAND || event.getAction() == Action.LEFT_CLICK_BLOCK
                 || event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) return;
         if (!leavesList.contains(event.getClickedBlock().getType())) return;
+        if(event.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR) return;
         if (!playerTries.containsKey(player)) playerTries.put(player, 0);
 
-        player.playSound(player.getLocation(), Sound.BLOCK_AZALEA_LEAVES_HIT, 0.10F, 1.0F);
+        player.playSound(event.getClickedBlock().getLocation(), Sound.BLOCK_AZALEA_LEAVES_HIT, 0.10F, 1.0F);
 
         int currentPlayerValue = this.playerTries.get(player);
-        this.playerTries.replace(player, currentPlayerValue++);
+        player.sendMessage("Current tries: " + currentPlayerValue);
+        this.playerTries.replace(player, ++currentPlayerValue); // have to be pre-increment to make it work
+        player.sendMessage();
 
         if (Math.random() <= this.stickProcChance && this.playerTries.get(player) < this.maxTries) {
-            event.getClickedBlock().setType(Material.AIR);
+            event.getClickedBlock().breakNaturally(); // to get saplings too
+            player.playSound(event.getClickedBlock().getLocation(), Sound.BLOCK_AZALEA_LEAVES_BREAK, 0.33F, 1.0F);
             this.playerTries.replace(player, 0);
             player.getInventory().addItem(this.stick);
 
             if (Math.random() <= this.appleProcChance) {
                 player.getInventory().addItem(this.apple);
-
             }
-            // event.getClickedBlock().breakNaturally(); // if you want to drop block
             return;
         }
         if (this.playerTries.get(player) >= this.maxTries) { // chance failed, nothing gained
-            event.getClickedBlock().setType(Material.AIR);
+            event.getClickedBlock().breakNaturally(); // to get saplings too
+            player.playSound(event.getClickedBlock().getLocation(), Sound.BLOCK_AZALEA_LEAVES_BREAK, 0.33F, 1.0F);
             this.playerTries.replace(player, 0);
         }
     }
