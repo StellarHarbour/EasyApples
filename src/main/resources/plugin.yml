@@ -2,3 +2,4 @@ name: EasyApples
 version: '${project.version}'
 main: com.segoitch.easyapples.EasyApples
 api-version: 1.19
+softdepend: [WorldGuard]
